@@ -17,6 +17,8 @@ con = connect().cursor()
 
 app = Flask(__name__,template_folder='templates')
 
+
+
 # use decorators to link the function to a url
 @app.route('/')
 def home():
@@ -41,6 +43,7 @@ def login():
     			return redirect(url_for('welcome'))
     	return render_template('login.html', error=error)
 
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():	
     	error = None
@@ -52,9 +55,13 @@ def register():
     		if len(x)>0:
     			error = 'Username already exists.'
     		else:
-    			con.execute("select max(userid) from users;")
-    			nextId = con.fetchall()[0][0] + 1
-    			con.execute("insert into users values (%s,%s,%s,%s,%s,%s,%s,0);",(nextId,request.form['username'],request.form['password'],request.form['name'],request.form['address'],request.form['email'],request.form['phone']))
+    			con.execute(select * from users;)
+    			if(not(len(con.fetchall)==0)):	
+	    			con.execute("select max(userid) from users;")
+	    			nextId = con.fetchall()[0][0] + 1
+	    			con.execute("insert into users values (%s,%s,%s,%s,%s,%s,%s,0);",(nextId,request.form['username'],request.form['password'],request.form['name'],request.form['address'],request.form['email'],request.form['phone']))
+	    		else:
+	    			con.execute("insert into users values (%s,%s,%s,%s,%s,%s,%s,0);",(1,request.form['username'],request.form['password'],request.form['name'],request.form['address'],request.form['email'],request.form['phone']))
 
     			return redirect(url_for('welcome'))
     	return render_template('register.html', error=error)
