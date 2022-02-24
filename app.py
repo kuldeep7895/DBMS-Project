@@ -9,6 +9,7 @@ def connect():
     user="postgres",
     password = "km123"
    )
+    conn.autocommit = True
     return conn
 
 con = connect().cursor()
@@ -40,7 +41,25 @@ def login():
     			return redirect(url_for('welcome'))
     	return render_template('login.html', error=error)
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():	
+    	error = None
+    	if request.method == 'POST':
+    		usern = request.form['username'];
+    		print(usern)
+    		con.execute("SELECT * FROM users where username = '%s';"%(request.form['username']))
+    		x = con.fetchall()
+    		if len(x)>0:
+    			error = 'Username already exists.'
+    		else:
+    			con.execute("select max(userid) from users;")
+    			nextId = con.fetchall()[0][0] + 1
+    			con.execute("insert into users values (%s,%s,%s,%s,%s,%s,%s,0);",(nextId,request.form['username'],request.form['password'],request.form['name'],request.form['address'],request.form['email'],request.form['phone']))
+
+    			return redirect(url_for('welcome'))
+    	return render_template('register.html', error=error)
+
+
 if __name__ == '__main__':
     app.run(debug=True)
-
 
