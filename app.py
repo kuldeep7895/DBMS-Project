@@ -7,7 +7,7 @@ def connect():
     host="localhost",
     database="dbmsproject",
     user="postgres",
-    password = "km123"
+    password = "admin123"
    )
     conn.autocommit = True
     return conn
@@ -68,33 +68,40 @@ def register():
    
    
 @app.route('/show', methods=['GET', 'POST'])
-def show():
-	
-    	error = 0
-    	data = {}
-    	if request.method == 'POST':
-    		op1 = request.form.get('option1')
-    		op2 = request.form.get('option2')    		
+def show():	
+    
+	error = 0
+	data = {}
+
+	con.execute("SELECT DISTINCT country from hotel_detail order by country ;")
+	data['country'] = con.fetchall()
+
+	if len(data['country'])<=0:
+		error = 1
+
+	if request.method == 'POST':
+		op1 = request.form.get('option1')
+		op2 = request.form.get('option2')    		
     		
 
-    		if op1 and op2:
-    			con.execute("SELECT hotelname, address, city, country FROM hotel_detail where country = '%s' and city = '%s' LIMIT 10 ;"%(request.form['country'],request.form['city']))
+		if op1 and op2:
+			con.execute("SELECT hotelname, address, city, country FROM hotel_detail where country = '%s' and city = '%s' LIMIT 10 ;"%(request.form['country'],request.form['city']))
     		
-    		elif op1:
-    			con.execute("SELECT hotelname, address, city, country FROM hotel_detail where country = '%s' LIMIT 10 ;"%(request.form['country']))	
-    			print(request.form.get('country'))
-    			print(con.mogrify("SELECT hotelname, address, city, country FROM hotel_detail where country = '%s' LIMIT 10 ;"%(request.form['country'])))
-    		else:
-    			con.execute("SELECT hotelname, address, city, country FROM hotel_detail where city = '%s' LIMIT 10 ;"%request.form['city'])
+		elif op1:
+			con.execute("SELECT hotelname, address, city, country FROM hotel_detail where country = '%s' LIMIT 10 ;"%(request.form['country']))	
+			print(request.form.get('country'))
+			print(con.mogrify("SELECT hotelname, address, city, country FROM hotel_detail where country = '%s' LIMIT 10 ;"%(request.form['country'])))
+		else:
+			con.execute("SELECT hotelname, address, city, country FROM hotel_detail where city = '%s' LIMIT 10 ;"%request.form['city'])
     		
-    		data['data'] = con.fetchall()
-    		if len(data['data'])<=0:
-    			error = 1
+		data['data'] = con.fetchall()
+		if len(data['data'])<=0:
+			error = 1
     	
-    	data['error'] = error
+	data['error'] = error
     	
-    	print(data)
-    	return render_template('show_hotels.html', data=data)
+	print(data)
+	return render_template('show_hotels.html', data=data)
 
 
 if __name__ == '__main__':
