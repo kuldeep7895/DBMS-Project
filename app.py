@@ -7,7 +7,7 @@ def connect():
     host="localhost",
     database="dbmsproject",
     user="postgres",
-    password = "admin123"
+    password = "km123"
    )
     conn.autocommit = True
     return conn
@@ -73,23 +73,27 @@ def show():
     	error = 0
     	data = {}
     	if request.method == 'POST':
-    		op1 = request.form['option1']
-    		op2 = request.form['option2']    		
+    		op1 = request.form.get('option1')
+    		op2 = request.form.get('option2')    		
     		
+
     		if op1 and op2:
-    			con.execute("SELECT hotelname, address, city, country FROM users where country = '%s' and city = '%s' LIMIT 10 ;", (request.form['country'],request.form['city']))
+    			con.execute("SELECT hotelname, address, city, country FROM hotel_detail where country = '%s' and city = '%s' LIMIT 10 ;"%(request.form['country'],request.form['city']))
     		
     		elif op1:
-    			con.execute("SELECT hotelname, address, city, country FROM users where country = '%s' LIMIT 10 ;", (request.form['country']))	
-    		
+    			con.execute("SELECT hotelname, address, city, country FROM hotel_detail where country = '%s' LIMIT 10 ;"%(request.form['country']))	
+    			print(request.form.get('country'))
+    			print(con.mogrify("SELECT hotelname, address, city, country FROM hotel_detail where country = '%s' LIMIT 10 ;"%(request.form['country'])))
     		else:
-    			con.execute("SELECT hotelname, address, city, country FROM users where city = '%s' LIMIT 10 ;", (request.form['city']))
-    			
+    			con.execute("SELECT hotelname, address, city, country FROM hotel_detail where city = '%s' LIMIT 10 ;"%request.form['city'])
+    		
     		data['data'] = con.fetchall()
     		if len(data['data'])<=0:
     			error = 1
     	
     	data['error'] = error
+    	
+    	print(data)
     	return render_template('show_hotels.html', data=data)
 
 
