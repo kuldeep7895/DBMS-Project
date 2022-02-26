@@ -7,7 +7,7 @@ def connect():
     host="localhost",
     database="dbmsproject",
     user="postgres",
-    password = "km123"
+    password = "admin123"
    )
     conn.autocommit = True
     return conn
@@ -55,16 +55,42 @@ def register():
     		if len(x)>0:
     			error = 'Username already exists.'
     		else:
-    			con.execute(select * from users;)
-    			if(not(len(con.fetchall)==0)):	
+    			con.execute("select * from users;")
+    			nextId = 1
+    			if(not(len(con.fetchall())==0)):	
 	    			con.execute("select max(userid) from users;")
 	    			nextId = con.fetchall()[0][0] + 1
-	    			con.execute("insert into users values (%s,%s,%s,%s,%s,%s,%s,0);",(nextId,request.form['username'],request.form['password'],request.form['name'],request.form['address'],request.form['email'],request.form['phone']))
-	    		else:
-	    			con.execute("insert into users values (%s,%s,%s,%s,%s,%s,%s,0);",(1,request.form['username'],request.form['password'],request.form['name'],request.form['address'],request.form['email'],request.form['phone']))
+	    		con.execute("insert into users values (%s,%s,%s,%s,%s,%s,%s,0);",(nextId,request.form['username'],request.form['password'],request.form['name'],request.form['address'],request.form['email'],request.form['phone']))
+	    
 
     			return redirect(url_for('welcome'))
     	return render_template('register.html', error=error)
+   
+   
+@app.route('/show', methods=['GET', 'POST'])
+def show():
+	
+    	error = 0
+    	data = {}
+    	if request.method == 'POST':
+    		op1 = request.form['option1']
+    		op2 = request.form['option2']    		
+    		
+    		if op1 and op2:
+    			con.execute("SELECT hotelname, address, city, country FROM users where country = '%s' and city = '%s' LIMIT 10 ;", (request.form['country'],request.form['city']))
+    		
+    		elif op1:
+    			con.execute("SELECT hotelname, address, city, country FROM users where country = '%s' LIMIT 10 ;", (request.form['country']))	
+    		
+    		else:
+    			con.execute("SELECT hotelname, address, city, country FROM users where city = '%s' LIMIT 10 ;", (request.form['city']))
+    			
+    		data['data'] = con.fetchall()
+    		if len(data['data'])<=0:
+    			error = 1
+    	
+    	data['error'] = error
+    	return render_template('show_hotels.html', data=data)
 
 
 if __name__ == '__main__':
