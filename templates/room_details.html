@@ -40,6 +40,8 @@
 						<th scope="col">On Site Rate</th>
 						<th scope="col">Rate Type</th>
 						<th scope="col">Discount</th>
+						<th scope="col">Booking Status</th>
+						<th scope="col"></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -64,6 +66,8 @@
 						<td>{{ x[5] }}</td>
 						<td>{{ x[6] }}</td>
 						<td>{{ x[9] }}</td>
+						<td></td>
+						<td><a class="btn btn-primary" href="{{ url_for('booking', hotelid=x[11], roomid=x[0]) }}">Book</a></td>
 					</tr>
 					{% endfor %}
 					{% endif %}

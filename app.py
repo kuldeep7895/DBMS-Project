@@ -148,7 +148,7 @@ def hotel(hotelid):
 	error = 0
 	data = {}
 
-	con.execute("SELECT room_detail.id, room_detail.roomtype, room_detail.roomamenities, room_detail.ratedescription, guests, onsiterate, ratetype, maxoccupancy, ispromo, discount, mealinclusiontype from room_detail inner join room_price on room_detail.id = room_price.id where hotelcode = %s ;" %(str(hotelid)))
+	con.execute("SELECT room_detail.id, room_detail.roomtype, room_detail.roomamenities, room_detail.ratedescription, guests, onsiterate, ratetype, maxoccupancy, ispromo, discount, mealinclusiontype, room_price.hotelid from room_detail inner join room_price on room_detail.id = room_price.id where hotelcode = %s ;" %(str(hotelid)))
 	#data['country'] = con.fetchall()
 	
 	result = con.fetchall()
@@ -168,6 +168,10 @@ def hotel(hotelid):
 	data['error'] = error
 
 	return render_template('room_details.html', data=data)
+
+@app.route('/booking/<int:hotelid>/<int:roomid>', methods=['GET', 'POST'])
+def booking(hotelid, roomid):	
+    return "Hotel: " + str(hotelid) + ",\t Roomid: " + str(roomid)
 
 if __name__ == '__main__':
     app.run(debug=True)
