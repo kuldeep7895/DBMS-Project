@@ -33,40 +33,74 @@ def welcome():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
 	
-    	error = None
-    	if request.method == 'POST':
-    		con.execute("SELECT * FROM users where username = %s and password = %s ;",(request.form['username'],request.form['password']))
-    		x = con.fetchall()
-    		if len(x)<=0:
-    			error = 'Invalid Credentials. Please try again.'
-    		else:
-    			return redirect(url_for('welcome'))
-    	return render_template('login.html', error=error)
+	error = None
+	if request.method == 'POST':
+		con.execute("SELECT * FROM users where username = %s and password = %s ;",(request.form['username'],request.form['password']))
+		x = con.fetchall()
+		if len(x)<=0:
+			error = 'Invalid Credentials. Please try again.'
+		else:
+			return redirect(url_for('welcome'))
+	return render_template('login.html', error=error)
 
+@app.route('/admin_login',methods = ['GET','POST'])
+def admin_login():
+    error = None
+    if request.method == 'POST':
+        if request.form['username'] == 'Admin':
+            if request.form['password']=="admin123":
+                return render_template('hotel_add_del.html')
+            else:
+                error = 'Invalid Credentials. Please try again.'
+        else:
+            error = 'Invalid Credentials. Please try again.'
+    # error = 'Invalid Credentials. Please try again.'
+    return render_template('admin.html',error = error)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():	
-    	error = None
-    	if request.method == 'POST':
-    		usern = request.form['username'];
-    		print(usern)
-    		con.execute("SELECT * FROM users where username = '%s';"%(request.form['username']))
-    		x = con.fetchall()
-    		if len(x)>0:
-    			error = 'Username already exists.'
-    		else:
-    			con.execute("select * from users;")
-    			nextId = 1
-    			if(not(len(con.fetchall())==0)):	
-	    			con.execute("select max(userid) from users;")
-	    			nextId = con.fetchall()[0][0] + 1
-	    		con.execute("insert into users values (%s,%s,%s,%s,%s,%s,%s,0);",(nextId,request.form['username'],request.form['password'],request.form['name'],request.form['address'],request.form['email'],request.form['phone']))
-	    
+	error = None
+	if request.method == 'POST':
+		usern = request.form['username']
+		print(usern)
+		con.execute("SELECT * FROM users where username = '%s';"%(request.form['username']))
+		x = con.fetchall()
+		if len(x)>0:
+			error = 'Username already exists.'
+		else:
+			con.execute("select * from users;")
+			nextId = 1
+			if(not(len(con.fetchall())==0)):	
+				con.execute("select max(userid) from users;")
+				nextId = con.fetchall()[0][0] + 1
+			con.execute("insert into users values (%s,%s,%s,%s,%s,%s,%s,0);",(nextId,request.form['username'],request.form['password'],request.form['name'],request.form['address'],request.form['email'],request.form['phone']))
+	
 
-    			return redirect(url_for('welcome'))
-    	return render_template('register.html', error=error)
+			return redirect(url_for('welcome'))
+	return render_template('register.html', error=error)
    
-   
+@app.route('/hotel_add_del',methods = ['GET','POST'])
+def hotel_add_del():
+    error = None
+    if request.method == 'POST':
+        hotelname = request.form['hotelname']
+        print(hotelname)
+        con.execute("select * from hotel_detail where hotelname = '%s';"%(request.form['hotelname']))
+        x = con.fetchall()
+        if len(x)>0:
+            error = 'Hotel is already added in the list.'
+        else:
+            con.execute("select * from hotel_detail;")
+            nextId = 1
+            if(not(len(con.fetchall())==0)):
+                con.execute("select max(hotelid) from hotel_detail;")
+                nextId = con.fetchall()[1][0] + 1
+            con.execute("insert into hotel_detail values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);",('0',nextId,request.form['hotelname'],request.form['address'],request.form['city'],request.form['country'],request.form['zipcode'],request.form['propertytype'],request.form['starrating'],request.form['latitude'],request.form['longitude'],request.form['source'],request.form['url'],request.form['curr']))
+
+            return redirect(url_for('welcome'))
+    return render_template('hotel_add_del.html',error=error)
+
+
 @app.route('/show', methods=['GET', 'POST'])
 def show():	
     
