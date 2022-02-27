@@ -7,7 +7,7 @@ def connect():
     host="localhost",
     database="dbmsproject",
     user="postgres",
-    password = "admin123"
+    password = "km123"
    )
     conn.autocommit = True
     return conn
@@ -108,7 +108,12 @@ def show():
 	data = {}
 
 	con.execute("SELECT DISTINCT country from hotel_detail order by country ;")
-	data['country'] = con.fetchall()
+	#data['country'] = con.fetchall()
+	result = []
+	for i in con.fetchall():
+		result.extend(i)
+	data['country'] = result
+	print(data['country'][0])
 
 	if len(data['country'])<=0:
 		error = 1
