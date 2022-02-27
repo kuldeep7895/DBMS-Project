@@ -151,12 +151,20 @@ def hotel(hotelid):
 	con.execute("SELECT room_detail.id, room_detail.roomtype, room_detail.roomamenities, room_detail.ratedescription, guests, onsiterate, ratetype, maxoccupancy, ispromo, discount, mealinclusiontype from room_detail inner join room_price on room_detail.id = room_price.id where hotelcode = %s ;" %(str(hotelid)))
 	#data['country'] = con.fetchall()
 	
-	data['rooms'] = con.fetchall()
-	print(data['rooms'])
-
-	if len(data['rooms']) <= 0:
+	result = con.fetchall()
+	#print(data['rooms'])
+	data['rooms'] = []
+	if len(result) <= 0:
 		error = 1
-	
+
+	else:
+		for x in result:
+			temp = list(x)
+			if temp[1] is not None:
+				temp[1] = temp[1].split(": ;")
+				temp[1].pop(-1)
+			data['rooms'].append(temp)
+		
 	data['error'] = error
 
 	return render_template('room_details.html', data=data)

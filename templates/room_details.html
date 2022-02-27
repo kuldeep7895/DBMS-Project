@@ -28,7 +28,7 @@
 		{% else %}
 		
 		<div class="container-fluid">
-			<table class="table">
+			<table class="table table-striped">
 				<thead>
 					<tr>
 					  	<th scope="col">Room Amenities</th>
@@ -46,7 +46,17 @@
 					{% for x in data.rooms %}
 					<tr>
 						<td>{{ x[2] }}</td>
-						<td>{{ x[1] }}</td>
+						<td>
+							<ol>
+								{% if x[1] is none %}
+									<p class="error">None</p>
+								{% else %}
+								{% for y in x[1] %}
+									<li>{{ y }}</li>
+								{% endfor %}
+								{% endif %}
+							</ol>
+						</td>
 						<td>{{ x[4] }}</td>
 						<td>{{ x[7] }}</td>
 						<td>{{ x[3] }}</td>
