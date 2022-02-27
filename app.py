@@ -113,20 +113,20 @@ def show():
 	for i in con.fetchall():
 		result.extend(i)
 	data['country'] = result
-	print(data['country'][0])
 
+	
 	if len(data['country'])<=0:
 		error = 1
 
 	if request.method == 'POST':
-		op1 = request.form.get('option1')
-		op2 = request.form.get('option2')    		
+#		op1 = request.form.get('option1')
+#		op2 = request.form.get('option2')    		
     		
-
-		if op1 and op2:
+		print(request.form['country'],)
+		if not(request.form['country']=="Choose Country") and not(request.form['city']==""):
 			con.execute("SELECT hotelname, address, city, country FROM hotel_detail where country = '%s' and city = '%s' LIMIT 10 ;"%(request.form['country'],request.form['city']))
     		
-		elif op1:
+		elif not(request.form['country']=="Choose Country"):
 			con.execute("SELECT hotelname, address, city, country FROM hotel_detail where country = '%s' LIMIT 10 ;"%(request.form['country']))	
 			print(request.form.get('country'))
 			print(con.mogrify("SELECT hotelname, address, city, country FROM hotel_detail where country = '%s' LIMIT 10 ;"%(request.form['country'])))
@@ -139,7 +139,7 @@ def show():
     	
 	data['error'] = error
     	
-	print(data)
+	#print(data)
 	return render_template('show_hotels.html', data=data)
 
 
