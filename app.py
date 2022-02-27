@@ -7,7 +7,7 @@ def connect():
     host="localhost",
     database="dbmsproject",
     user="postgres",
-    password = "km123"
+    password = "admin123"
    )
     conn.autocommit = True
     return conn
@@ -101,7 +101,7 @@ def hotel_add_del():
     return render_template('hotel_add_del.html',error=error)
 
 
-@app.route('/show', methods=['GET', 'POST'])
+@app.route('/show_hotels', methods=['GET', 'POST'])
 def show():	
     
 	error = 0
@@ -124,14 +124,14 @@ def show():
     		
 		print(request.form['country'],)
 		if not(request.form['country']=="Choose Country") and not(request.form['city']==""):
-			con.execute("SELECT hotelname, address, city, country FROM hotel_detail where country = '%s' and city = '%s' LIMIT 10 ;"%(request.form['country'],request.form['city']))
+			con.execute("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where country = '%s' and city = '%s' LIMIT 10 ;"%(request.form['country'],request.form['city']))
     		
 		elif not(request.form['country']=="Choose Country"):
-			con.execute("SELECT hotelname, address, city, country FROM hotel_detail where country = '%s' LIMIT 10 ;"%(request.form['country']))	
+			con.execute("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where country = '%s' LIMIT 10 ;"%(request.form['country']))	
 			print(request.form.get('country'))
-			print(con.mogrify("SELECT hotelname, address, city, country FROM hotel_detail where country = '%s' LIMIT 10 ;"%(request.form['country'])))
+			print(con.mogrify("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where country = '%s' LIMIT 10 ;"%(request.form['country'])))
 		else:
-			con.execute("SELECT hotelname, address, city, country FROM hotel_detail where city = '%s' LIMIT 10 ;"%request.form['city'])
+			con.execute("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where city = '%s' LIMIT 10 ;"%request.form['city'])
     		
 		data['data'] = con.fetchall()
 		if len(data['data'])<=0:
@@ -142,6 +142,24 @@ def show():
 	#print(data)
 	return render_template('show_hotels.html', data=data)
 
+@app.route('/hotel/<int:hotelid>', methods=['GET', 'POST'])
+def hotel(hotelid):	
+    #return "Hotel:" + str(hotelid)
+	error = 0
+	data = {}
+
+	con.execute("SELECT room_detail.id, room_detail.roomtype, room_detail.roomamenities, room_detail.ratedescription, guests, onsiterate, ratetype, maxoccupancy, ispromo, discount, mealinclusiontype from room_detail inner join room_price on room_detail.id = room_price.id where hotelcode = %s ;" %(str(hotelid)))
+	#data['country'] = con.fetchall()
+	
+	data['rooms'] = con.fetchall()
+	print(data['rooms'])
+
+	if len(data['rooms']) <= 0:
+		error = 1
+	
+	data['error'] = error
+
+	return render_template('room_details.html', data=data)
 
 if __name__ == '__main__':
     app.run(debug=True)
