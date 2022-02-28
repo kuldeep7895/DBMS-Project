@@ -2,8 +2,8 @@ from crypt import methods
 import re
 import psycopg2
 import random
-from flask import Flask, render_template, redirect, url_for, request
-
+from flask import Flask, render_template, redirect, url_for, request,session
+from datetime import datetime,timezone
 ##########################
 def captcha_str():
 	var_list = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
@@ -23,8 +23,8 @@ def connect():
     conn = psycopg2.connect(
     host="localhost",
     database="dbmsproject",
-    user="harsh",
-    password = "admin123"
+    user="postgres",
+    password = "km123"
    )
     conn.autocommit = True
     return conn
@@ -33,7 +33,7 @@ con = connect().cursor()
 
 
 app = Flask(__name__,template_folder='templates')
-
+app.secret_key = "secret"
 
 
 # use decorators to link the function to a url
@@ -57,6 +57,7 @@ def login():
 		if len(x)<=0:
 			error = 'Invalid Credentials. Please try again.'
 		else:
+			session['username'] = request.form['username']
 			return redirect(url_for('welcome'))
 	return render_template('login.html', error=error)
 
@@ -380,12 +381,97 @@ def hotel(hotelid):
 			data['rooms'].append(temp)
 		
 	data['error'] = error
+	
+#	if request.method == "POST":
+#		data = {}
+#		session['bookData'] = data
+#		return redirect(url_for('booking'))
+	print(request.method)
+	return render_template('room_details.html',data=data)
 
-	return render_template('room_details.html', data=data)
-
+#@app.route('/pay', methods=['GET', 'POST'])
+#def pay():
+#	return("Please pay")
 @app.route('/booking/<int:hotelid>/<int:roomid>', methods=['GET', 'POST'])
-def booking(hotelid, roomid):	
-    return "Hotel: " + str(hotelid) + ",\t Roomid: " + str(roomid)
+def booking(hotelid, roomid):
+	data = {}
+	con.execute("SELECT room_detail.id, room_detail.roomtype, room_detail.roomamenities, room_detail.ratedescription, guests, onsiterate, ratetype, maxoccupancy, ispromo, discount, mealinclusiontype, room_price.hotelid from room_detail inner join room_price on room_detail.id = room_price.id where hotelcode = %s and room_detail.id=%s ;" %(str(hotelid),str(roomid)))
+	res = con.fetchone()
+
+	data['username'] = session['username']
+	data['room'] = res[2]
+	fromD = "10-05-2003"
+	toD = "15-05-2003"
+	data['from'] = "10-05-2003"
+	data['to'] = "15-05-2003"
+	a = datetime.strptime(fromD, '%d-%m-%Y').date()
+	b = datetime.strptime(toD, '%d-%m-%Y').date()
+	
+	
+	data['discount'] = (res[9]) * ((b-a).days)
+	data['rawPay'] = (res[11]) * ((b-a).days)
+	data['toPay'] = (res[11]-res[9]) * ((b-a).days)
+	
+	con.execute("select hotelname from hotel_detail where hotelid=%s;"%(str(hotelid)))
+	
+	data['error'] = None
+	res = con.fetchone()
+	print(res)
+	data['hotelName'] = res[0]
+	
+	if request.method == 'POST':
+		con.execute("select walletbalance from users where username=%s;"%("'"+data['username']+"'"))
+		bal = float(con.fetchone()[0])
+		if(bal>data['toPay']):
+			bal = bal - data['toPay']
+			con.execute("update users set walletbalance=%s where username=%s"%(str(bal),"'"+str(session['username'])+"'"))
+			
+			con.execute("select * from bookings;")
+			nextId = 1
+			if(not(len(con.fetchall())==0)):	
+				con.execute("select max(bookingid) from bookings;")
+				nextId = con.fetchall()[0][0] + 1
+			con.execute("select userid from users where username=%s"%("'"+data['username']+"'"))
+			userid = con.fetchone()[0]
+			
+			con.execute("insert into bookings values (%s,%s,%s,%s,%s,%s,%s,%s);",(nextId,userid,roomid,data['toPay'],datetime.now(timezone.utc)
+,hotelid,fromD,toD))
+	
+
+			return redirect(url_for('welcome'))
+			
+		else:
+			data['error'] = "Bal Not enough. Please add money to your wallet"
+		
+	return render_template('pay.html',data = data)
+	#return "Hotel: " + str(hotelid) + ",\t Roomid: " + str(roomid)
+	
+
+	
+@app.route('/addMoney', methods=['GET', 'POST'])
+def addMoney():
+	username = session['username']
+	error = None
+	if request.method == 'POST':
+		print("Yes")
+		con.execute("select walletbalance from users where username=%s;"%("'"+session['username']+"'"))
+		bal = float(con.fetchone()[0])
+		if(float(request.form['amtAdd'])>0):
+			bal = bal + float(request.form['amtAdd'])
+			con.execute("update users set walletbalance=%s where username=%s"%(str(bal),"'"+str(session['username'])+"'"))
+		
+#		con.execute("SELECT * FROM users where username = %s and password = %s ;",(request.form['username'],request.form['password']))
+#		x = con.fetchall()
+#		if len(x)<=0:
+#			error = 'Invalid Credentials. Please try again.'
+#		else:
+#			session['username'] = request.form['username']
+			return redirect(url_for('welcome'))
+	return render_template('addMoney.html', username = username,error=error)
+
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
