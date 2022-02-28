@@ -23,7 +23,7 @@ def connect():
     conn = psycopg2.connect(
     host="localhost",
     database="dbmsproject",
-    user="harsh",
+    user="postgres",
     password = "admin123"
    )
     conn.autocommit = True
