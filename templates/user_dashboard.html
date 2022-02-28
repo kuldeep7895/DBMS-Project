@@ -14,7 +14,7 @@
                     <li>Address: {{ data.user_details[2] }}</li>
                     <li>Email: {{ data.user_details[3] }}</li>
                     <li>Phone: {{ data.user_details[4] }}</li>
-                    <li>Wallet: {{ data.user_details[5] }}</li>
+                    <li>Wallet Balance: {{ data.user_details[5] }}</li>
                 </ul>
 
                 <a class="btn btn-primary" href="/edit-user-info/{{ data.userid }}">Edit Details</a>
@@ -34,10 +34,11 @@
                               <th scope="col">Address</th>
                               <th scope="col">City</th>
                               <th scope="col">Country</th>
-                              <th scope="col">Room Amenities</th>
-                              <th scope="col">On-site Rate</th>
+                              <th scope="col">Room Type</th>
+                              <th scope="col">Paid</th>
                               <th scope="col">From</th>
                               <th scope="col">Date</th>
+                              <th scope="col">Booked on</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -51,6 +52,7 @@
                             <td>{{ x[5] }}</td>
                             <td>{{ x[6] }}</td>
                             <td>{{ x[7] }}</td>
+                            <td>{{ x[8] }}</td>
                         </tr>
                         {% endfor %}
                         {% endif %}

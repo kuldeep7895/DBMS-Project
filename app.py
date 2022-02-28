@@ -24,7 +24,7 @@ def connect():
     host="localhost",
     database="dbmsproject",
     user="postgres",
-    password = "km123"
+    password = "admin123"
    )
     conn.autocommit = True
     return conn
@@ -73,7 +73,7 @@ def user_dashboard(userid):
 
 	data['user_details'] = con.fetchall()[0]
 
-	con.execute("with table1 as ( select hotelid, roomid, fromdate, todate from bookings where userid = %s ) select hotelname, address, city, country, roomamenities, onsiterate, fromdate, todate from (table1 inner join hotel_detail on hotel_detail.hotelid = table1.hotelid) inner join room_price on room_price.id = table1.roomid ;" %(str(userid)))
+	con.execute("with table1 as ( select hotelid, roomid, fromdate, todate, created_at from bookings where userid = %s ) select hotelname, address, city, country, room_detail.roomamenities, onsiterate, fromdate, todate, created_at from ((table1 inner join hotel_detail on hotel_detail.hotelid = table1.hotelid) inner join room_price on room_price.id = table1.roomid) inner join room_detail on room_detail.id = table1.roomid ;" %(str(userid)))
 	data['bookings'] = con.fetchall()
 
 	if len(data['bookings']) <= 0:
