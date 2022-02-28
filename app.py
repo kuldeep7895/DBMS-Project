@@ -47,20 +47,43 @@ def welcome():
 
 
 # Route for handling the login page logic
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/user_login', methods=['GET', 'POST'])
 def login():
 	
 	error = None
 	if request.method == 'POST':
-		con.execute("SELECT * FROM users where username = %s and password = %s ;",(request.form['username'],request.form['password']))
+		con.execute("SELECT * FROM users where username = %s and password = %s LIMIT 1 ;",(request.form['username'],request.form['password']))
 		x = con.fetchall()
 		if len(x)<=0:
 			error = 'Invalid Credentials. Please try again.'
 		else:
 			session['username'] = request.form['username']
 			#return redirect(url_for('welcome'))
-			return redirect('/show_hotels')
+			return redirect(url_for('user_dashboard', userid=str(x[0][0]), option=1))
 	return render_template('login.html', error=error)
+
+@app.route('/user_dashboard/<string:userid>', methods=['GET', 'POST'])
+def user_dashboard(userid):	
+    
+	error = 0
+	bookings_empty = 0
+	data = {}
+	data['userid'] = userid
+	con.execute("SELECT username, name, address, email, phone, walletbalance FROM users where userid = %s;" %(str(userid)))
+
+	data['user_details'] = con.fetchall()[0]
+
+	con.execute("with table1 as ( select hotelid, roomid, fromdate, todate from bookings where userid = %s ) select hotelname, address, city, country, roomamenities, onsiterate, fromdate, todate from (table1 inner join hotel_detail on hotel_detail.hotelid = table1.hotelid) inner join room_price on room_price.id = table1.roomid ;" %(str(userid)))
+	data['bookings'] = con.fetchall()
+
+	if len(data['bookings']) <= 0:
+		bookings_empty = 1
+
+	print(data['bookings'])
+	
+	data['bookings_empty'] = bookings_empty
+
+	return render_template('user_dashboard.html', data=data)
 
 @app.route('/admin_login',methods = ['GET','POST'])
 
@@ -79,7 +102,7 @@ def admin_login():
 		if request.form['username']=='Admin':
 			if request.form['password']=='admin123':
 				if request.form['captcha']==capt_arr[len(capt_arr)-2]:
-					return render_template('admin_page.html')
+					return redirect(url_for('admin_page'))
 				else:
 					error = 'Captcha did not match'
 			else:
