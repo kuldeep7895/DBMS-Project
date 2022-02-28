@@ -1,0 +1,15 @@
+<html>
+<head>
+    <title>Admin Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+</head>
+<body>
+    <h1>Number of hotels {{num}}</h1><br>
+    <h1>Number of hotels {{city}}</h1><br>
+    <h1>Number of hotels {{country}}</h1><br>
+    <td><a class="btn btn-primary" href="{{url_for('add_hotel')}}">Add a Hotel</a></td>
+    <td><a class="btn btn-primary" href="{{url_for('del_hotel')}}">Delete a Hotel</a></td>
+    <td><a class="btn btn-primary" href="{{url_for('edit_hotel')}}">Edit Hotel Detail</a></td>
+</body>
+</html>

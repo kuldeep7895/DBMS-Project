@@ -1,0 +1,43 @@
+<html>
+<head>
+    <title>Add Hotel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+</head>
+<body>
+    
+    <div class = "container">
+        <h1>{{hotelname}}</h1>
+        <form action="" method="post">
+            <div class="input-group mb-3">
+				<label class="input-group-text" for="min_price">min_price</label>
+				<input type="number" class="form-control" name="min_price">
+			</div>
+            <div class="input-group mb-3">
+				<span class="input-group-text">max_price</span>
+				<input type="number" class="form-control" name="max_price">
+			</div>
+            <div class="input-group mb-3">
+				<span class="input-group-text">Diff_min_price</span>
+				<input type="number" class="form-control" name="Diff_min_price">
+			</div>
+            <div class="input-group mb-3">
+				<span class="input-group-text">Diff_max_price </span>
+				<input type="number" class="form-control" name="Diff_max_price">
+			</div>
+            <div class="input-group mb-3">
+				<span class="input-group-text">score </span>
+				<input type="number" class="form-control" name="score">
+			</div>
+            <input class="btn btn-primary" type="submit" value="Enter">
+        </form>
+        <br>
+        {% if shift %}
+        <h1>Hotel has been Added</h1>
+        <td><a class="btn btn-primary" href="{{url_for('admin_page')}}">Go to Admin Page</a></td>
+        <td><a class="btn btn-primary" href="{{url_for('add_hotel')}}">Add Another Hotel</a></td>
+        {% endif %}
+    </div>
+    <!-- <p> {{hotelname}}</p> -->
+</body>
+</html>

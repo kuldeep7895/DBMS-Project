@@ -1,12 +1,29 @@
+from crypt import methods
+import re
 import psycopg2
+import random
 from flask import Flask, render_template, redirect, url_for, request
 
+##########################
+def captcha_str():
+	var_list = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
+			'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
+			'1','2','3','4','5','6','7','8','9','0']
+	capt = ''
+	for i in range(6):
+		n = random.randint(0,len(var_list)-1)
+		capt = capt + var_list[n]
+	return capt
+
+capt_arr = []
+hotelname_arr =[]
+##########################
 
 def connect():
     conn = psycopg2.connect(
     host="localhost",
     database="dbmsproject",
-    user="postgres",
+    user="harsh",
     password = "admin123"
    )
     conn.autocommit = True
@@ -44,18 +61,31 @@ def login():
 	return render_template('login.html', error=error)
 
 @app.route('/admin_login',methods = ['GET','POST'])
+
+########################################################3
 def admin_login():
-    error = None
-    if request.method == 'POST':
-        if request.form['username'] == 'Admin':
-            if request.form['password']=="admin123":
-                return render_template('hotel_add_del.html')
-            else:
-                error = 'Invalid Credentials. Please try again.'
-        else:
-            error = 'Invalid Credentials. Please try again.'
-    # error = 'Invalid Credentials. Please try again.'
-    return render_template('admin.html',error = error)
+	capt = captcha_str()
+	capt_arr.append(capt)
+	# capt_index+=1
+	error = None
+	if request.method == 'POST':
+		print(request.form['captcha'])
+		print()
+		print(capt)
+		print(capt_arr)
+		# print(capt_index)
+		if request.form['username']=='Admin':
+			if request.form['password']=='admin123':
+				if request.form['captcha']==capt_arr[len(capt_arr)-2]:
+					return render_template('admin_page.html')
+				else:
+					error = 'Captcha did not match'
+			else:
+				error = 'Incorrect Password'
+		else:
+			error = 'Incorrrect Username'
+	return render_template('admin.html',capt = capt,error = error)
+########################################################################
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():	
@@ -79,27 +109,211 @@ def register():
 			return redirect(url_for('welcome'))
 	return render_template('register.html', error=error)
    
-@app.route('/hotel_add_del',methods = ['GET','POST'])
-def hotel_add_del():
-    error = None
-    if request.method == 'POST':
-        hotelname = request.form['hotelname']
-        print(hotelname)
-        con.execute("select * from hotel_detail where hotelname = '%s';"%(request.form['hotelname']))
-        x = con.fetchall()
-        if len(x)>0:
-            error = 'Hotel is already added in the list.'
-        else:
-            con.execute("select * from hotel_detail;")
-            nextId = 1
-            if(not(len(con.fetchall())==0)):
-                con.execute("select max(hotelid) from hotel_detail;")
-                nextId = con.fetchall()[1][0] + 1
-            con.execute("insert into hotel_detail values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);",('0',nextId,request.form['hotelname'],request.form['address'],request.form['city'],request.form['country'],request.form['zipcode'],request.form['propertytype'],request.form['starrating'],request.form['latitude'],request.form['longitude'],request.form['source'],request.form['url'],request.form['curr']))
 
-            return redirect(url_for('welcome'))
-    return render_template('hotel_add_del.html',error=error)
+###############################################################
+@app.route('/admin_page',methods=['GET','POST'])
+def admin_page():
+	con.execute("select count(hotelid) as number from hotel_detail;")
+	num = con.fetchall()[0][0]
+	con.execute("select count(distcity) as count from (  select distinct(city) as distcity  from hotel_detail group by city) as temp;")
+	city = con.fetchall()[0][0]
+	con.execute("select count(distcity) as count from (  select distinct(country) as distcity  from hotel_detail group by country) as temp;")
+	country = con.fetchall()[0][0]
+	return render_template("admin_page.html",num = num,city = city, country = country)
 
+@app.route('/add_hotel',methods=['GET','POST'])
+def add_hotel():
+	error = None
+	check = -1
+	
+	if request.method=='POST':
+		hotelname = request.form['hotelname']
+		hotelname_arr.append(hotelname)
+		if len(hotelname)==0:
+			check = 0
+		else:
+			con.execute("select * from hotel_detail where hotelname = '%s';"%(hotelname))
+			search_res = con.fetchall()
+			if len(search_res)==0:
+				check = 1
+			else:
+				check=0
+			
+	
+	return render_template('add_hotel.html',check= check)
+
+@app.route('/add_hotel1',methods=['GET','POST'])
+def add_hotel1():
+	shift = None
+	hotel_name = hotelname_arr[len(hotelname_arr)-1]
+	# print("hotelname")
+	# print(hotelname_arr)
+	if request.method == 'POST':
+		# print("asfa")
+		con.execute("select * from hotel_detail;")
+		# print("b")
+		nextId = 1
+		id = 1
+		if(not(len(con.fetchall())==0)):
+			# print("c")
+			con.execute("select max(hotelid) from hotel_detail;")
+			# print("d")
+			nextId = con.fetchall()[0][0] + 1
+			con.execute("select max(id) from hotel_detail;")
+			id = con.fetchall()[0][0]+1
+			# print(nextId)
+			# print(id)
+		con.execute("insert into hotel_detail values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);",(id,nextId,hotel_name,request.form['address'],request.form['city'],request.form['country'],request.form['zipcode'],request.form['propertytype'],request.form['starrating'],0.0,0.0,0,request.form['url'],request.form['currency']))
+		shift = 1
+	return render_template("add_hotel1.html",hotelname = hotel_name,shift = shift)
+
+@app.route('/del_hotel',methods=['GET','POST'])
+def del_hotel():
+	error = 0
+	data = {}
+
+	con.execute("SELECT DISTINCT country from hotel_detail order by country ;")
+	result = []
+	for i in con.fetchall():
+		result.extend(i)
+	data['country'] = result
+
+	
+	if len(data['country'])<=0:
+		error = 1
+
+	if request.method == 'POST':   		
+    		
+		print(request.form['country'],)
+		if not(request.form['hotelname']==""):
+			if not(request.form['country']=="Choose Country") and not(request.form['city']==""):
+				con.execute("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where hotelname = '%s' and country = '%s' and city = '%s' LIMIT 10 ;"%(request.form['hotelname'],request.form['country'],request.form['city']))
+				
+			elif not(request.form['country']=="Choose Country"):
+				con.execute("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where hotelname = '%s' and country = '%s' LIMIT 10 ;"%(request.form['hotelname'],request.form['country']))	
+			elif not(request.form['city']==""):
+				con.execute("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where hotelname = '%s' and city = '%s' LIMIT 10 ;"%(request.form['hotelname'],request.form['city']))
+			else:
+				con.execute("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where hotelname = '%s' LIMIT 10 ;"%(request.form['hotelname']))
+		else:
+			if not(request.form['country']=="Choose Country") and not(request.form['city']==""):
+				con.execute("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where country = '%s' and city = '%s' LIMIT 10 ;"%(request.form['country'],request.form['city']))
+				
+			elif not(request.form['country']=="Choose Country"):
+				con.execute("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where country = '%s' LIMIT 10 ;"%(request.form['country']))	
+			else:
+				con.execute("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where city = '%s' LIMIT 10 ;"%request.form['city'])
+    		
+		data['data'] = con.fetchall()
+		if len(data['data'])<=0:
+			error = 1
+    	
+	data['error'] = error
+    	
+	#print(data)
+	return render_template('del_hotel.html', data=data)
+
+@app.route('/del_hotel1/<int:hotelid>',methods=['GET','POST'])
+def del_hotel1(hotelid):
+	print(hotelid)
+	con.execute("DELETE FROM hotel_detail WHERE hotelid = '%s';"%hotelid)
+	return render_template('del_hotel1.html')
+
+@app.route('/edit_hotel',methods=['GET','POST'])
+def edit_hotel():
+	error = 0
+	data = {}
+	con.execute("SELECT DISTINCT country from hotel_detail order by country ;")
+	result = []
+	for i in con.fetchall():
+		result.extend(i)
+	data['country'] = result
+	if len(data['country'])<=0:
+		error = 1
+	if request.method == 'POST':   		
+		if not(request.form['hotelname']==""):
+			if not(request.form['country']=="Choose Country") and not(request.form['city']==""):
+				con.execute("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where hotelname = '%s' and country = '%s' and city = '%s' LIMIT 10 ;"%(request.form['hotelname'],request.form['country'],request.form['city']))
+				
+			elif not(request.form['country']=="Choose Country"):
+				con.execute("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where hotelname = '%s' and country = '%s' LIMIT 10 ;"%(request.form['hotelname'],request.form['country']))	
+			elif not(request.form['city']==""):
+				con.execute("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where hotelname = '%s' and city = '%s' LIMIT 10 ;"%(request.form['hotelname'],request.form['city']))
+			else:
+				con.execute("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where hotelname = '%s' LIMIT 10 ;"%(request.form['hotelname']))
+		else:
+			if not(request.form['country']=="Choose Country") and not(request.form['city']==""):
+				con.execute("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where country = '%s' and city = '%s' LIMIT 10 ;"%(request.form['country'],request.form['city']))
+				
+			elif not(request.form['country']=="Choose Country"):
+				con.execute("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where country = '%s' LIMIT 10 ;"%(request.form['country']))	
+			else:
+				con.execute("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where city = '%s' LIMIT 10 ;"%request.form['city'])
+    		
+		data['data'] = con.fetchall()
+		if len(data['data'])<=0:
+			error = 1
+    	
+	data['error'] = error
+	return render_template('edit_hotel.html', data=data)
+
+@app.route('/edit_hotel1/<int:hotelid>',methods=['GET','POST'])
+def edit_hotel1(hotelid):
+	shift = None
+	con.execute("SELECT hotelname FROM hotel_detail WHERE hotelid = '%s';"%(hotelid))
+	hotel_name = con.fetchall()[0][0]
+	if request.method == "POST":
+		if not(request.form['address']==""):
+			con.execute("UPDATE hotel_detail SET address = '%s' WHERE hotelid = '%s';"%(request.form['address'],hotelid))
+		
+		if not(request.form['city']==""):
+			con.execute("UPDATE hotel_detail SET city = '%s' WHERE hotelid = '%s';"%(request.form['city'],hotelid))
+		
+		if not(request.form['country']==""):
+			con.execute("UPDATE hotel_detail SET country = '%s' WHERE hotelid = '%s';"%(request.form['country'],hotelid))
+		
+		if not(request.form['zipcode']==""):
+			con.execute("UPDATE hotel_detail SET zipcode = '%s' WHERE hotelid = '%s';"%(request.form['zipcode'],hotelid))
+		
+		if not(request.form['propertytype']==""):
+			con.execute("UPDATE hotel_detail SET propertytype = '%s' WHERE hotelid = '%s';"%(request.form['propertytype'],hotelid))
+		
+		if not(request.form['starrating']==""):
+			con.execute("UPDATE hotel_detail SET starrating = '%s' WHERE hotelid = '%s';"%(request.form['starrating'],hotelid))
+		
+		if not(request.form['url']==""):
+			con.execute("UPDATE hotel_detail SET url = '%s' WHERE hotelid = '%s';"%(request.form['url'],hotelid))
+		
+		if not(request.form['currency']==""):
+			con.execute("UPDATE hotel_detail SET curr = '%s' WHERE hotelid = '%s';"%(request.form['currency'],hotelid))
+		shift = 1
+	return render_template("edit_hotel1.html",hotelname = hotel_name,shift = shift)
+		
+@app.route('/add_hotel_more',methods=['GET','POST'])
+def add_hotel_more():
+	shift = None
+	hotel_name = hotelname_arr[len(hotelname_arr)-1]
+	# print("hotelname")
+	# print(hotelname_arr)
+	if request.method == 'POST':
+		# print("asfa")
+		con.execute("select * from hotel_detail;")
+		# print("b")
+		nextId = 1
+		id = 1
+		if(not(len(con.fetchall())==0)):
+			# print("c")
+			con.execute("select max(hotelid) from hotel_detail;")
+			# print("d")
+			nextId = con.fetchall()[0][0] + 1
+			con.execute("select max(id) from hotel_detail;")
+			id = con.fetchall()[0][0]+1
+			# print(nextId)
+			# print(id)
+		con.execute("insert into hotel_detail values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);",(id,nextId,hotel_name,request.form['address'],request.form['city'],request.form['country'],request.form['zipcode'],request.form['propertytype'],request.form['starrating'],0.0,0.0,0,request.form['url'],request.form['currency']))
+		shift = 1
+	return render_template("add_hotel_more.html",hotelname = hotel_name,shift = shift)
+###############################################################
 
 @app.route('/show_hotels', methods=['GET', 'POST'])
 def show():	
