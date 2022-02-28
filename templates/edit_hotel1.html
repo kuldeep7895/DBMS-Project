@@ -47,6 +47,7 @@
         <br>
         {% if shift %}
         <h1>Changes have been made to the {{hotelname}}</h1>
+        <td><a class="btn btn-primary" href="{{url_for('edit_hotel_more',hotelid = hotelid)}}">Edit more information</a></td>
         <td><a class="btn btn-primary" href="{{url_for('admin_page')}}">Go to Admin Page</a></td>
         <td><a class="btn btn-primary" href="{{url_for('edit_hotel')}}">Edit Another Hotel</a></td>
         {% endif %}

@@ -47,9 +47,13 @@
         <br>
         {% if shift %}
         <h1>Hotel has been Added</h1>
-        <td><a class="btn btn-primary" href="{{url_for('add_hotel_more',nextId = nextId)}}">Add More Information</a></td>
+        <td><a class="btn btn-primary" href="{{url_for('add_hotel_more')}}">Add More Information</a></td>
         <td><a class="btn btn-primary" href="{{url_for('admin_page')}}">Go to Admin Page</a></td>
         <td><a class="btn btn-primary" href="{{url_for('add_hotel')}}">Add Another Hotel</a></td>
+        {% endif %}
+        {% if error %}
+        <p class="error"><strong>Error: </strong>Fill All the Entries</p><br>
+
         {% endif %}
     </div>
     <!-- <p> {{hotelname}}</p> -->
