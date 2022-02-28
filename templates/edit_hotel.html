@@ -41,6 +41,7 @@
 		    <input class="btn btn-primary" type="submit" value="Search">
 		</form>
 
+        <td><a class="btn btn-primary" href="{{url_for('admin_page')}}">Back</a></td>
 		{% block content3 %}
 		{% if error %}
 			<p class="error"><strong>Error:</strong> {{ data.error }}</p>

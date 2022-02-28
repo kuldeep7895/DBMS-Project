@@ -16,6 +16,7 @@
             <input class="btn btn-primary" type="submit" value="Check">
         </form>
         <br>
+        <td><a class="btn btn-primary" href="{{url_for('admin_page')}}">Back</a></td>
         {% if check == 1 %}
         <h1>Enter the informations for the new Hotel</h1>
         <td><a class="btn btn-primary" href="{{url_for('add_hotel1')}}">Enter Information</a></td>
