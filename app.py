@@ -24,7 +24,7 @@ def connect():
     host="localhost",
     database="dbmsproject",
     user="postgres",
-    password = "km123"
+    password = "admin123"
    )
     conn.autocommit = True
     return conn
@@ -58,7 +58,8 @@ def login():
 			error = 'Invalid Credentials. Please try again.'
 		else:
 			session['username'] = request.form['username']
-			return redirect(url_for('welcome'))
+			#return redirect(url_for('welcome'))
+			return redirect('/show_hotels')
 	return render_template('login.html', error=error)
 
 @app.route('/admin_login',methods = ['GET','POST'])
@@ -359,13 +360,47 @@ def show():
 
 @app.route('/hotel/<int:hotelid>', methods=['GET', 'POST'])
 def hotel(hotelid):	
-    #return "Hotel:" + str(hotelid)
 	error = 0
 	data = {}
 
-	con.execute("SELECT room_detail.id, room_detail.roomtype, room_detail.roomamenities, room_detail.ratedescription, guests, onsiterate, ratetype, maxoccupancy, ispromo, discount, mealinclusiontype, room_price.hotelid from room_detail inner join room_price on room_detail.id = room_price.id where hotelcode = %s ;" %(str(hotelid)))
-	#data['country'] = con.fetchall()
-	
+	con.execute("SELECT DISTINCT roomamenities from room_detail where hotelcode = %s ;" %(str(hotelid)))
+	result = []
+	for i in con.fetchall():
+		result.extend(i)
+	data['ra'] = result
+
+	if request.method == 'POST':
+		print(request.form.get('ra'))
+
+		if not(request.form.get('ra')=="Choose Room Amenities") and not(request.form['startprice']=="" or request.form['startprice']==None) and not(request.form['endprice']=="" or request.form['endprice']==None):
+			con.execute("SELECT room_detail.id, room_detail.roomtype, room_detail.roomamenities, room_detail.ratedescription, guests, onsiterate, ratetype, maxoccupancy, ispromo, discount, mealinclusiontype, room_price.hotelid from room_detail inner join room_price on room_detail.id = room_price.id where hotelcode = %s and room_detail.roomamenities = '%s' and onsiterate between %s and %s ;" %(str(hotelid), request.form.get('ra'), request.form['startprice'], request.form['endprice']))		
+
+		elif not(request.form.get('ra')=="Choose Room Amenities") and not(request.form['startprice']=="" or request.form['startprice']==None):
+			con.execute("SELECT room_detail.id, room_detail.roomtype, room_detail.roomamenities, room_detail.ratedescription, guests, onsiterate, ratetype, maxoccupancy, ispromo, discount, mealinclusiontype, room_price.hotelid from room_detail inner join room_price on room_detail.id = room_price.id where hotelcode = %s and room_detail.roomamenities = '%s' and  onsiterate >= %s ;" %(str(hotelid), request.form.get('ra'), str(request.form['startprice'])))
+
+		elif not(request.form.get('ra')=="Choose Room Amenities") and not(request.form['endprice']=="" or request.form['endprice']==None):
+			con.execute("SELECT room_detail.id, room_detail.roomtype, room_detail.roomamenities, room_detail.ratedescription, guests, onsiterate, ratetype, maxoccupancy, ispromo, discount, mealinclusiontype, room_price.hotelid from room_detail inner join room_price on room_detail.id = room_price.id where hotelcode = %s and room_detail.roomamenities = '%s' and  onsiterate <= %s ;" %(str(hotelid), request.form.get('ra'), str(request.form['endprice'])))
+
+		elif not(request.form['startprice']=="" or request.form['startprice']==None) and not(request.form['endprice']=="" or request.form['endprice']==None):
+			con.execute("SELECT room_detail.id, room_detail.roomtype, room_detail.roomamenities, room_detail.ratedescription, guests, onsiterate, ratetype, maxoccupancy, ispromo, discount, mealinclusiontype, room_price.hotelid from room_detail inner join room_price on room_detail.id = room_price.id where hotelcode = %s and onsiterate between %s and %s ;" %(str(hotelid), str(request.form['startprice'], str(request.form['endprice']))))		
+
+		elif not(request.form.get('ra')=="Choose Room Amenities"):
+			con.execute("SELECT room_detail.id, room_detail.roomtype, room_detail.roomamenities, room_detail.ratedescription, guests, onsiterate, ratetype, maxoccupancy, ispromo, discount, mealinclusiontype, room_price.hotelid from room_detail inner join room_price on room_detail.id = room_price.id where hotelcode = %s and room_detail.roomamenities = '%s' ;" %(str(hotelid), request.form.get('ra')))
+			#print(con.mogrify("SELECT room_detail.id, room_detail.roomtype, room_detail.roomamenities, room_detail.ratedescription, guests, onsiterate, ratetype, maxoccupancy, ispromo, discount, mealinclusiontype, room_price.hotelid from room_detail inner join room_price on room_detail.id = room_price.id where hotelcode = %s and room_detail.roomamenities = '%s' ;" %(str(hotelid), request.form.get('ra'))))
+
+		elif not(request.form['startprice']=="" or request.form['startprice']==None):
+			con.execute("SELECT room_detail.id, room_detail.roomtype, room_detail.roomamenities, room_detail.ratedescription, guests, onsiterate, ratetype, maxoccupancy, ispromo, discount, mealinclusiontype, room_price.hotelid from room_detail inner join room_price on room_detail.id = room_price.id where hotelcode = %s and onsiterate >= %s ;" %(str(hotelid), request.form['startprice']))
+
+		elif not(request.form['endprice']=="" or request.form['endprice']==None):
+			con.execute("SELECT room_detail.id, room_detail.roomtype, room_detail.roomamenities, room_detail.ratedescription, guests, onsiterate, ratetype, maxoccupancy, ispromo, discount, mealinclusiontype, room_price.hotelid from room_detail inner join room_price on room_detail.id = room_price.id where hotelcode = %s and onsiterate <= %s ;" %(str(hotelid), request.form['endprice']))
+
+		else:
+			con.execute("SELECT room_detail.id, room_detail.roomtype, room_detail.roomamenities, room_detail.ratedescription, guests, onsiterate, ratetype, maxoccupancy, ispromo, discount, mealinclusiontype, room_price.hotelid from room_detail inner join room_price on room_detail.id = room_price.id where hotelcode = %s ;" %(str(hotelid)))
+
+	else:
+		con.execute("SELECT room_detail.id, room_detail.roomtype, room_detail.roomamenities, room_detail.ratedescription, guests, onsiterate, ratetype, maxoccupancy, ispromo, discount, mealinclusiontype, room_price.hotelid from room_detail inner join room_price on room_detail.id = room_price.id where hotelcode = %s ;" %(str(hotelid)))
+		#data['country'] = con.fetchall()
+		
 	result = con.fetchall()
 	#print(data['rooms'])
 	data['rooms'] = []
@@ -378,16 +413,13 @@ def hotel(hotelid):
 			if temp[1] is not None:
 				temp[1] = temp[1].split(": ;")
 				temp[1].pop(-1)
-			data['rooms'].append(temp)
+				data['rooms'].append(temp)
+
+		
 		
 	data['error'] = error
-	
-#	if request.method == "POST":
-#		data = {}
-#		session['bookData'] = data
-#		return redirect(url_for('booking'))
-	print(request.method)
-	return render_template('room_details.html',data=data)
+
+	return render_template('room_details.html', data=data)
 
 #@app.route('/pay', methods=['GET', 'POST'])
 #def pay():
@@ -409,8 +441,8 @@ def booking(hotelid, roomid):
 	
 	
 	data['discount'] = (res[9]) * ((b-a).days)
-	data['rawPay'] = (res[11]) * ((b-a).days)
-	data['toPay'] = (res[11]-res[9]) * ((b-a).days)
+	data['rawPay'] = (res[5]) * ((b-a).days)
+	data['toPay'] = (res[5]-res[9]) * ((b-a).days)
 	
 	con.execute("select hotelname from hotel_detail where hotelid=%s;"%(str(hotelid)))
 	
