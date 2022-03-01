@@ -24,7 +24,7 @@ def connect():
     host="localhost",
     database="dbmsproject",
     user="postgres",
-    password = "admin123"
+    password = "km123"
    )
     conn.autocommit = True
     return conn
