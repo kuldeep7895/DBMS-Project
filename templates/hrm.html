@@ -14,11 +14,7 @@
             <label class="input-group-text" for="Username">Enter Username</label>
             <input type="text" class="form-control" name="username">
         </div>
-        <div class="input-group mb-3">
-            <span class="input-group-text">Enter Password</span>
-            <input type="password" class="form-control" name="password">
-        </div>
-        <input class="btn btn-primary" type="submit" value="Delete">
+        <input class="btn btn-primary" type="submit" value="Search">
         </form>
 
 		{% block content3 %}
@@ -31,10 +27,10 @@
 				<thead>
 					<tr>
 					  	<th scope="col">Review ID</th>
-					  	<th scope="col">Room ID</th>
+					  	<th scope="col">User ID</th>
 					  	<th scope="col">Hotel ID</th>
+					  	<th scope="col">Time Stamp</th>
 					  	<th scope="col">Review</th>
-					  	<th scope="col">Booked At</th>
 					</tr>
 				</thead>
 				<tbody>
