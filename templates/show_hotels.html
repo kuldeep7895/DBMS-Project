@@ -59,6 +59,7 @@
 					  	<th scope="col">Address</th>
 					  	<th scope="col">City</th>
 					  	<th scope="col">Country</th>
+						<th scope="col"></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -68,6 +69,7 @@
 						<td>{{ x[2] }}</td>
 						<td>{{ x[3] }}</td>
 						<td>{{ x[4] }}</td>
+						<td><a class="btn btn-primary" href="/reviews/{{ x[0] }}">Reviews</a></td>
 					</tr>
 					{% endfor %}
 					{% endif %}
