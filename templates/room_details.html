@@ -1,3 +1,4 @@
+
 <html>
 	<head>
     	<title>Show Rooms</title>
@@ -109,5 +110,9 @@
 			</table>
 		</div>
 	</div>
+	 {% if data.error %}
+ <div class="alert alert-danger" role="alert">
+<strong>Error:</strong> {{ data.error }}
+      {% endif %}
   </body>
 </html>

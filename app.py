@@ -573,6 +573,12 @@ def hotel(hotelid):
 	result = []
 	for i in con.fetchall():
 		result.extend(i)
+		
+
+	if(len(result)==0):
+		data['error'] = "The hotel is not accepting bookings currently"
+		return render_template('room_details.html', data=data)
+	
 	data['ra'] = result
 
 	if request.method == 'POST':
@@ -632,58 +638,62 @@ def hotel(hotelid):
 #	return("Please pay")
 @app.route('/booking/<int:hotelid>/<int:roomid>', methods=['GET', 'POST'])
 def booking(hotelid, roomid):
-	data = {}
-	con.execute("SELECT room_detail.id, room_detail.roomtype, room_detail.roomamenities, room_detail.ratedescription, guests, onsiterate, ratetype, maxoccupancy, ispromo, discount, mealinclusiontype, room_price.hotelid from room_detail inner join room_price on room_detail.id = room_price.id where hotelcode = %s and room_detail.id=%s ;" %(str(hotelid),str(roomid)))
-	res = con.fetchone()
+	if session.get('username'):
+		data = {}
+		con.execute("SELECT room_detail.id, room_detail.roomtype, room_detail.roomamenities, room_detail.ratedescription, guests, onsiterate, ratetype, maxoccupancy, ispromo, discount, mealinclusiontype, room_price.hotelid from room_detail inner join room_price on room_detail.id = room_price.id where hotelcode = %s and room_detail.id=%s ;" %(str(hotelid),str(roomid)))
+		res = con.fetchone()
 
-	data['username'] = session['username']
-	data['room'] = res[2]
-	fromD = "10-05-2003"
-	toD = "15-05-2003"
-	data['from'] = "10-05-2003"
-	data['to'] = "15-05-2003"
-	a = datetime.strptime(fromD, '%d-%m-%Y').date()
-	b = datetime.strptime(toD, '%d-%m-%Y').date()
-	
-	
-	data['discount'] = (res[9]) * ((b-a).days)
-	data['rawPay'] = (res[5]) * ((b-a).days)
-	data['toPay'] = (res[5]-res[9]) * ((b-a).days)
-	
-	con.execute("select hotelname from hotel_detail where hotelid=%s;"%(str(hotelid)))
-	
-	data['error'] = None
-	res = con.fetchone()
-	print(res)
-	data['hotelName'] = res[0]
-	
-	if request.method == 'POST':
-		con.execute("select walletbalance from users where username=%s;"%("'"+data['username']+"'"))
-		bal = float(con.fetchone()[0])
-		if(bal>data['toPay']):
-			bal = bal - data['toPay']
-			con.execute("update users set walletbalance=%s where username=%s"%(str(bal),"'"+str(session['username'])+"'"))
-			
-			con.execute("select * from bookings;")
-			nextId = 1
-			if(not(len(con.fetchall())==0)):	
-				con.execute("select max(bookingid) from bookings;")
-				nextId = con.fetchall()[0][0] + 1
-			con.execute("select userid from users where username=%s"%("'"+data['username']+"'"))
-			userid = con.fetchone()[0]
-			
-			con.execute("insert into bookings values (%s,%s,%s,%s,%s,%s,%s,%s);",(nextId,userid,roomid,data['toPay'],datetime.now(timezone.utc)
-,hotelid,fromD,toD))
-	
-
-			return redirect(url_for('user_dashboard'))
-			
-		else:
-			data['error'] = "Bal Not enough. Please add money to your wallet"
+		data['username'] = session['username']
+		data['room'] = res[2]
+		fromD = "10-05-2003"
+		toD = "15-05-2003"
+		data['from'] = "10-05-2003"
+		data['to'] = "15-05-2003"
+		a = datetime.strptime(fromD, '%d-%m-%Y').date()
+		b = datetime.strptime(toD, '%d-%m-%Y').date()
 		
-	return render_template('pay.html',data = data)
-	#return "Hotel: " + str(hotelid) + ",\t Roomid: " + str(roomid)
-	
+		
+		data['discount'] = (res[9]) * ((b-a).days)
+		data['rawPay'] = (res[5]) * ((b-a).days)
+		data['toPay'] = (res[5]-res[9]) * ((b-a).days)
+		
+		con.execute("select hotelname from hotel_detail where hotelid=%s;"%(str(hotelid)))
+		
+		data['error'] = None
+		res = con.fetchone()
+		print(res)
+		data['hotelName'] = res[0]
+		
+		if request.method == 'POST':
+			con.execute("select walletbalance from users where username=%s;"%("'"+data['username']+"'"))
+			bal = float(con.fetchone()[0])
+			if(bal>data['toPay']):
+				bal = bal - data['toPay']
+				con.execute("update users set walletbalance=%s where username=%s"%(str(bal),"'"+str(session['username'])+"'"))
+				
+				con.execute("select * from bookings;")
+				nextId = 1
+				if(not(len(con.fetchall())==0)):	
+					con.execute("select max(bookingid) from bookings;")
+					nextId = con.fetchall()[0][0] + 1
+				con.execute("select userid from users where username=%s"%("'"+data['username']+"'"))
+				userid = con.fetchone()[0]
+				
+				con.execute("insert into bookings values (%s,%s,%s,%s,%s,%s,%s,%s);",(nextId,userid,roomid,data['toPay'],datetime.now(timezone.utc)
+	,hotelid,fromD,toD))
+		
+
+				return redirect(url_for('user_dashboard'))
+				
+			else:
+				data['error'] = "Bal Not enough. Please add money to your wallet"
+			
+		return render_template('pay.html',data = data)
+		#return "Hotel: " + str(hotelid) + ",\t Roomid: " + str(roomid)
+	else:
+		return redirect(url_for('login'))
+		
+			
 
 	
 @app.route('/addMoney', methods=['GET', 'POST'])
