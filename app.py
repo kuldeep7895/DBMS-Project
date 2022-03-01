@@ -277,6 +277,11 @@ def del_hotel():
 @app.route('/del_hotel1/<int:hotelid>',methods=['GET','POST'])
 def del_hotel1(hotelid):
 	con.execute("DELETE FROM hotel_detail WHERE hotelid = '%s';"%hotelid)
+	con.execute("DELETE FROM bookings WHERE hotelid = '%s';"%hotelid)
+	con.execute("DELETE FROM hotel_price WHERE hotelcode = '%s';"%hotelid)
+	con.execute("DELETE FROM reviews WHERE hotelid = '%s';"%hotelid)
+	con.execute("DELETE FROM room_detail WHERE hotelcode = '%s';"%hotelid)
+	con.execute("DELETE FROM room_price WHERE hotelid = '%s';"%hotelid)
 	return render_template('del_hotel1.html')
 
 @app.route('/edit_hotel',methods=['GET','POST'])
