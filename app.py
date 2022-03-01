@@ -50,6 +50,8 @@ def welcome():
 @app.route('/user_login', methods=['GET', 'POST'])
 def login():
 	
+	if session.get('username'):
+		return redirect(url_for('user_dashboard')) 
 	error = None
 	if request.method == 'POST':
 		con.execute("SELECT * FROM users where username = %s and password = %s LIMIT 1 ;",(request.form['username'],request.form['password']))
@@ -61,6 +63,10 @@ def login():
 			#return redirect(url_for('welcome'))
 			return redirect(url_for('user_dashboard'))
 	return render_template('login.html', error=error)
+@app.route('/logOut', methods=['GET', 'POST'])
+def logOut():
+	session.pop('username', None)
+	return render_template('welcome.html')  # render a template
 
 @app.route('/user_dashboard', methods=['GET', 'POST'])
 def user_dashboard():	
@@ -151,7 +157,7 @@ def register():
 			con.execute("insert into users values (%s,%s,%s,%s,%s,%s,%s,0);",(nextId,request.form['username'],request.form['password'],request.form['name'],request.form['address'],request.form['email'],request.form['phone']))
 	
 
-			return redirect(url_for('welcome'))
+			return redirect(url_for('login'))
 	return render_template('register.html', error=error)
 
 @app.route('/reviews/<int:hotelid>', methods=['GET', 'POST'])
@@ -698,7 +704,7 @@ def addMoney():
 #			error = 'Invalid Credentials. Please try again.'
 #		else:
 #			session['username'] = request.form['username']
-			return redirect(url_for('welcome'))
+			return redirect(url_for('user_dashboard'))
 	return render_template('addMoney.html', username = username,error=error)
 
 
