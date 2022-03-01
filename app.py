@@ -39,7 +39,7 @@ app.secret_key = "secret"
 # use decorators to link the function to a url
 @app.route('/')
 def home():
-    return "Hello, World!"  # return a string
+    return redirect('/welcome')
 
 @app.route('/welcome')
 def welcome():
@@ -59,21 +59,22 @@ def login():
 		else:
 			session['username'] = request.form['username']
 			#return redirect(url_for('welcome'))
-			return redirect(url_for('user_dashboard', userid=str(x[0][0]), option=1))
+			return redirect(url_for('user_dashboard'))
 	return render_template('login.html', error=error)
 
-@app.route('/user_dashboard/<string:userid>', methods=['GET', 'POST'])
-def user_dashboard(userid):	
+@app.route('/user_dashboard', methods=['GET', 'POST'])
+def user_dashboard():	
     
 	error = 0
 	bookings_empty = 0
 	data = {}
-	data['userid'] = userid
-	con.execute("SELECT username, name, address, email, phone, walletbalance FROM users where userid = %s;" %(str(userid)))
+	data['username'] = session['username']
+	con.execute("SELECT userid, username, name, address, email, phone, walletbalance FROM users where username = '%s';" %(data['username']))
 
 	data['user_details'] = con.fetchall()[0]
+	userid = data['user_details'][0]
 
-	con.execute("with table1 as ( select hotelid, roomid, fromdate, todate, created_at from bookings where userid = %s ) select hotelname, address, city, country, room_detail.roomamenities, onsiterate, fromdate, todate, created_at from ((table1 inner join hotel_detail on hotel_detail.hotelid = table1.hotelid) inner join room_price on room_price.id = table1.roomid) inner join room_detail on room_detail.id = table1.roomid ;" %(str(userid)))
+	con.execute("with table1 as ( select hotelid, roomid, fromdate, todate, created_at from bookings where userid = %s ) select hotelname, address, city, country, room_detail.roomamenities, onsiterate, fromdate, todate, created_at, table1.hotelid, table1.roomid from ((table1 inner join hotel_detail on hotel_detail.hotelid = table1.hotelid) inner join room_price on room_price.id = table1.roomid) inner join room_detail on room_detail.id = table1.roomid ;" %(str(userid)))
 	data['bookings'] = con.fetchall()
 
 	if len(data['bookings']) <= 0:
@@ -84,6 +85,25 @@ def user_dashboard(userid):
 	data['bookings_empty'] = bookings_empty
 
 	return render_template('user_dashboard.html', data=data)
+
+@app.route('/edit_user_detail', methods=['GET', 'POST'])
+def edit_user_detail():	
+    
+	error = 0
+	bookings_empty = 0
+	data = {}
+	username = session['username']
+
+	if request.method == "POST":
+		con.execute("update users set password='%s', name='%s', address='%s', email='%s', phone=%s where username='%s'" %(request.form['password'],request.form['name'],request.form['address'],request.form['email'],request.form['phone'], username))		
+		
+
+		return redirect(url_for('user_dashboard'))
+	
+	con.execute("SELECT username, name, address, email, phone, walletbalance FROM users where username = '%s';" %(username))
+	data = con.fetchall()
+
+	return render_template('edit_user_detail.html', data=data)
 
 @app.route('/admin_login',methods = ['GET','POST'])
 
@@ -133,7 +153,32 @@ def register():
 
 			return redirect(url_for('welcome'))
 	return render_template('register.html', error=error)
-   
+
+@app.route('/reviews/<int:hotelid>/<int:roomid>', methods=['GET', 'POST'])
+def review(hotelid, roomid):
+	error = 0
+	data = {}
+
+	con.execute("select reviews from reviews where hotelid = %s order by reviews ;" %(str(hotelid)))
+	result = []
+	for i in con.fetchall():
+		result.extend(i)
+	data['review'] = result
+
+	con.execute("select max(reviewid) + 1 from reviews ;")
+	reviewid = con.fetchall()[0][0]
+
+	if reviewid is None:
+		reviewid = 1
+
+	if request.method == 'POST':
+		if not(request.form.get('newreview') == ""):
+			con.execute("select userid from users where username = '%s' ;" %(session['username']))
+			userid = con.fetchall()[0][0]
+
+			con.execute("insert into reviews (reviewid, userid, roomid, hotelid, reviews) values( %s, %s, %s, %s, '%s' );" %(str(reviewid), str(userid), str(roomid), str(hotelid), request.form.get('newreview')))
+			return redirect('/user_dashboard')
+	return render_template('hotel_reviews.html', data=data, error=error)
 
 ###############################################################
 @app.route('/admin_page',methods=['GET','POST'])

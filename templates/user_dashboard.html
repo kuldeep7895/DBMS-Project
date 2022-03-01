@@ -9,15 +9,15 @@
             <div>
                 <h2>User Details</h2>
                 <ul>
-                    <li>Username: {{ data.user_details[0] }}</li>                
-                    <li>Name: {{ data.user_details[1] }}</li>
-                    <li>Address: {{ data.user_details[2] }}</li>
-                    <li>Email: {{ data.user_details[3] }}</li>
-                    <li>Phone: {{ data.user_details[4] }}</li>
-                    <li>Wallet Balance: {{ data.user_details[5] }}</li>
+                    <li>Username: {{ data.user_details[1] }}</li>                
+                    <li>Name: {{ data.user_details[2] }}</li>
+                    <li>Address: {{ data.user_details[3] }}</li>
+                    <li>Email: {{ data.user_details[4] }}</li>
+                    <li>Phone: {{ data.user_details[5] }}</li>
+                    <li>Wallet Balance: {{ data.user_details[6] }}</li>
                 </ul>
 
-                <a class="btn btn-primary" href="/edit-user-info/{{ data.userid }}">Edit Details</a>
+                <a class="btn btn-primary" href="/edit_user_detail">Edit Details</a>
                 <a class="btn btn-primary ms-5" href="/addMoney">Add Money</a>
             </div>
 
@@ -39,6 +39,7 @@
                               <th scope="col">From</th>
                               <th scope="col">Date</th>
                               <th scope="col">Booked on</th>
+                              <th scope="col"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -53,6 +54,7 @@
                             <td>{{ x[6] }}</td>
                             <td>{{ x[7] }}</td>
                             <td>{{ x[8] }}</td>
+                            <td><a class="btn btn-primary" href="/reviews/{{ x[9] }}/{{ x[10] }}">See Reviews</a></td>
                         </tr>
                         {% endfor %}
                         {% endif %}
