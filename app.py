@@ -20,14 +20,14 @@ hotelid_arr = []
 ##########################
 
 def connect():
-    conn = psycopg2.connect(
-    host="localhost",
-    database="dbmsproject",
-    user="postgres",
-    password = "admin123"
-   )
-    conn.autocommit = True
-    return conn
+	conn = psycopg2.connect(
+	host="10.17.50.232",
+	database="group_36",
+	user="group_36",
+	password = "Ow40DfOlzdVRj",
+	port = "5432")
+	conn.autocommit = True
+	return conn
 
 con = connect().cursor()
 
@@ -100,7 +100,7 @@ def edit_user_detail():
 
 		return redirect(url_for('user_dashboard'))
 	
-	con.execute("SELECT username, name, address, email, phone, walletbalance FROM users where username = '%s';" %(username))
+	con.execute("SELECT username, name, address, email, phone, password FROM users where username = '%s';" %(username))
 	data = con.fetchall()
 
 	return render_template('edit_user_detail.html', data=data)
