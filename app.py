@@ -24,7 +24,7 @@ def connect():
     host="localhost",
     database="dbmsproject",
     user="postgres",
-    password = "km123"
+    password = "admin123"
    )
     conn.autocommit = True
     return conn
@@ -154,8 +154,8 @@ def register():
 			return redirect(url_for('welcome'))
 	return render_template('register.html', error=error)
 
-@app.route('/reviews/<int:hotelid>/<int:roomid>', methods=['GET', 'POST'])
-def review(hotelid, roomid):
+@app.route('/reviews/<int:hotelid>', methods=['GET', 'POST'])
+def review(hotelid):
 	error = 0
 	data = {}
 
@@ -176,7 +176,7 @@ def review(hotelid, roomid):
 			con.execute("select userid from users where username = '%s' ;" %(session['username']))
 			userid = con.fetchall()[0][0]
 
-			con.execute("insert into reviews (reviewid, userid, roomid, hotelid, reviews) values( %s, %s, %s, %s, '%s' );" %(str(reviewid), str(userid), str(roomid), str(hotelid), request.form.get('newreview')))
+			con.execute("insert into reviews (reviewid, userid, hotelid, reviews) values( %s, %s, %s, '%s' );" %(str(reviewid), str(userid), str(hotelid), request.form.get('newreview')))
 			return redirect('/user_dashboard')
 	return render_template('hotel_reviews.html', data=data, error=error)
 
@@ -670,7 +670,7 @@ def booking(hotelid, roomid):
 ,hotelid,fromD,toD))
 	
 
-			return redirect(url_for('welcome'))
+			return redirect(url_for('user_dashboard'))
 			
 		else:
 			data['error'] = "Bal Not enough. Please add money to your wallet"
