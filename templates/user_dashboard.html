@@ -74,9 +74,12 @@
         	        <a class="btn btn-primary ms-5" href="/addMoney">Add Money</a>
 		</div>
        </div>
+       
+       
+       
 
             <div class="mt-5">
-                <h2>Current Bookings</h2>
+                <h2>Recent Bookings</h2>
                 {% block content %}
                 {% if data.bookings_empty == 1 %}
                 <p>No Bookings</p>
@@ -108,7 +111,7 @@
                             <td>{{ x[6] }}</td>
                             <td>{{ x[7] }}</td>
                             <td>{{ x[8] }}</td>
-                            <td><a class="btn btn-primary" href="/reviews/{{ x[9] }}/{{ x[10] }}">See Reviews</a></td>
+<!--                            <td><a class="btn btn-primary" href="/reviews/{{ x[9] }}/{{ x[10] }}">See Reviews</a></td>-->
                         </tr>
                         {% endfor %}
                         {% endif %}
