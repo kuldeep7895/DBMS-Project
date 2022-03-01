@@ -504,14 +504,14 @@ def show():
     		
 		print(request.form['country'],)
 		if not(request.form['country']=="Choose Country") and not(request.form['city']==""):
-			con.execute("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where country = '%s' and city = '%s' LIMIT 10 ;"%(request.form['country'],request.form['city']))
+			con.execute("with table1 as ( SELECT hotelid, hotelname, address, city, country FROM hotel_detail where country = '%s' and city = '%s' ), table2 as (	SELECT table1.hotelid, count(*) as num from table1 inner join room_detail on table1.hotelid = room_detail.hotelcode group by table1.hotelid ) select * from table1 where hotelid in (SELECT hotelid from table2 where num > 0) ;"%(request.form['country'],request.form['city']))
     		
 		elif not(request.form['country']=="Choose Country"):
-			con.execute("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where country = '%s' LIMIT 10 ;"%(request.form['country']))	
-			print(request.form.get('country'))
-			print(con.mogrify("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where country = '%s' LIMIT 10 ;"%(request.form['country'])))
+			con.execute("with table1 as ( SELECT hotelid, hotelname, address, city, country FROM hotel_detail where country = '%s' ), table2 as (	SELECT table1.hotelid, count(*) as num from table1 inner join room_detail on table1.hotelid = room_detail.hotelcode group by table1.hotelid ) select * from table1 where hotelid in (SELECT hotelid from table2 where num > 0) ;"%(request.form['country']))	
+			#print(request.form.get('country'))
+			#print(con.mogrify("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where country = '%s' LIMIT 10 ;"%(request.form['country'])))
 		else:
-			con.execute("SELECT hotelid, hotelname, address, city, country FROM hotel_detail where city = '%s' LIMIT 10 ;"%request.form['city'])
+			con.execute("with table1 as ( SELECT hotelid, hotelname, address, city, country FROM hotel_detail where city = '%s' ), table2 as (	SELECT table1.hotelid, count(*) as num from table1 inner join room_detail on table1.hotelid = room_detail.hotelcode group by table1.hotelid ) select * from table1 where hotelid in (SELECT hotelid from table2 where num > 0) ;"%request.form['city'])
     		
 		data['data'] = con.fetchall()
 		if len(data['data'])<=0:
